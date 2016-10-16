@@ -1,3 +1,9 @@
+"""
+Policiy gradient network.
+Largely based on the excellent blogpost by Andrej Karpathy
+http://karpathy.github.io/2016/05/31/rl/
+"""
+
 import time
 import pickle
 import numpy as np
@@ -6,6 +12,12 @@ class PolicyGradientNet():
 
     def __init__(self, model=None, D=9, H=9, A=9, batch_size=9, 
                        learning_rate=1e-3, gamma=0.99, decay_rate=0.99):
+        """
+        Model can be a dictionary with attributes W1 and W2 to resume
+        from a checkpoint.
+        Otherwise, a new model will be constructed with input D, H hidden
+        units and A outputs.
+        """
         if model is not None:
             self.model = model
         else:
