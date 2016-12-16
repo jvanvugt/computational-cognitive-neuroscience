@@ -26,7 +26,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 80
+maxlen = 100
 step = 3
 sentences = []
 next_chars = []
@@ -45,9 +45,9 @@ for i, sentence in enumerate(sentences):
 
 print('Build model...')
 model = Sequential()
-model.add(LSTM(256, input_shape=(maxlen, len(chars)), return_sequences=True))
+model.add(LSTM(512, input_shape=(maxlen, len(chars)), return_sequences=True))
 model.add(Dropout(0.2))
-model.add(LSTM(256, input_shape=(maxlen, len(chars))))
+model.add(LSTM(512))
 model.add(Dropout(0.2))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
