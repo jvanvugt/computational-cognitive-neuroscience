@@ -3,6 +3,7 @@ Adapted version of the Keras LSTM text generation example
 https://github.com/fchollet/keras/blob/master/examples/lstm_text_generation.py
 '''
 
+from __future__ import print_function
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, LambdaCallback
@@ -27,7 +28,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 100
-step = 3
+step = 11
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
