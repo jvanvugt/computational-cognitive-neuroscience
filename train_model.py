@@ -55,8 +55,7 @@ model.add(Activation('softmax'))
 
 optimizer = RMSprop(lr=2e-3)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
-print(model.summary())
-sys.exit()
+model.summary()
 
 
 def schedule(epoch):
