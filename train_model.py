@@ -18,7 +18,7 @@ import pickle
 resume = False
 
 path = 'D:/Data/python.txt'
-text = open(path).read()[:10000]
+text = open(path).read()
 print('corpus length:', len(text))
 
 chars = sorted(list(set(text)))
