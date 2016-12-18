@@ -5,4 +5,4 @@
 module load cuda
 module load cudnn
 module load python/2.7.9
-THEANO_FLAGS='mode=FAST_RUN,device=gpu,floatX=float32,lib.cnmem=1' srun python train_model.py
+THEANO_FLAGS='mode=FAST_RUN,device=gpu,floatX=float32,lib.cnmem=1' srun -u python train_model.py
