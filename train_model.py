@@ -18,7 +18,7 @@ import pickle
 resume = False
 
 path = 'D:/Data/python.txt'
-text = open(path).read()
+text = open(path).read()[:10000]
 print('corpus length:', len(text))
 
 chars = sorted(list(set(text)))
@@ -46,15 +46,17 @@ for i, (sentence, off_sentence) in enumerate(zip(sentences, offset_sentences)):
 
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars)), return_sequences=True))
+model.add(LSTM(1024, input_shape=(maxlen, len(chars)), return_sequences=True))
 model.add(Dropout(0.2))
-model.add(LSTM(512))
+model.add(LSTM(512, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(TimeDistributed(Dense(len(chars))))
 model.add(Activation('softmax'))
 
 optimizer = RMSprop(lr=2e-3)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+print(model.summary())
+sys.exit()
 
 
 def schedule(epoch):
