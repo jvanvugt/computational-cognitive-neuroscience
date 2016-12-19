@@ -62,4 +62,10 @@ function previousCell() {
     window.drawActivations();
 }
 
+function gotoCell(e) {
+    currentCell = e.value;
+    document.getElementById('current-cell').innerHTML = currentCell;
+    window.drawActivations();
+}
+
 

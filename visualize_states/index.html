@@ -10,6 +10,8 @@
         </pre>
         <input type="button" value="Previous cell" onclick="previousCell();">
         <input type="button" value="Next cell" onclick="nextCell();">
+        <label for="cell-field">Go to:</label>
+        <input type="number" value="0" onchange="gotoCell(this);">
         Current cell: <span id="current-cell">0</span>/<span id="total-cells">0</span>
         <script src="visualize_state.js"></script>
     </body>
