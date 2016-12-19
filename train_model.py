@@ -19,6 +19,9 @@ resume = False
 
 path = 'D:/Data/python.txt'
 text = open(path).read()
+# Linux includes '\r' when reading a file while Windows doesn't. 
+# We remove it to avoid inconsistencies.
+text = text.replace('\r', '')
 print('corpus length:', len(text))
 
 chars = sorted(list(set(text)))
