@@ -27,7 +27,7 @@ function parseCsv(csv) {
     return table;
 }
 
-fetch('cell_states.csv')
+fetch('cell_states.csv', {method: 'GET', mode: 'cors', cache: 'default'})
     .then(response => response.text())
     .then(csv => {
         let cellStates = parseCsv(csv);
@@ -35,10 +35,11 @@ fetch('cell_states.csv')
         fetch('generated.txt')
             .then(response => response.text())
             .then(text => {
+                text = text.replace('\n', '\r\n');
                 window.drawActivations = function() {
                     let htmlToWrite = '';
                     for (let i = 0; i < cellStates.length; i++) {
-                        let letter = text[i].replace('\n', ' <br>');
+                        let letter = text[i].replace('\r', ' ').replace('\n', ' \n');
                         let color = activationToColor(cellStates[i][currentCell]);
                         htmlToWrite += `<span style="background-color:${color}">${letter}</span>`;
                     }
