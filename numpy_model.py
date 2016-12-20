@@ -8,7 +8,7 @@ and network state
 """
 import numpy as np
 import h5py
-
+import pickle
 
 def softmax(x):
     """
@@ -50,9 +50,8 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
     Returns a tuple of:
     - next_h: Next hidden state, of shape (N, H)
     - next_c: Next cell state, of shape (N, H)
-    - cache: Tuple of values needed for backward pass.
+    - internals: dictionary of the internal activations
     """
-
     a = np.dot(x, Wx) + np.dot(prev_h, Wh) + b
     a_i, a_f, a_o, a_g = np.split(a, 4, axis=1)
     i = sigmoid(a_i)
@@ -61,8 +60,8 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
     g = np.tanh(a_g)
     next_c = f * prev_c + i * g
     next_h = o * np.tanh(next_c)
-
-    return next_h, next_c
+    internals = {'i': a_i, 'f': a_f, 'o': a_o, 'g': a_g}
+    return next_h, next_c, internals
 
 def create_lstm_matrices(filepath, layer):
     """
@@ -125,21 +124,43 @@ def sample(preds, temperature=1.0):
     probas = np.random.multinomial(1, preds, 1)
     return np.argmax(probas)
 
-def generate_text(initial_char='d', timesteps=400, temperature=1., save_cells=True):
+def generate_text(timesteps=400, temperature=1., save_cells=True,
+                  fixed_text='', choose_random=False):
     """
     Generate text by doing *timesteps* forward passes through
     the network. At each timestep, a character is sampled.
-    initial_char is used as a seed. temperature controls
-    the variability in the output. Low temperature will
-    lead to repetetive results(<0.5), high temperature (>1.2) might
-    cause random garbage as output.
     The result is printed.
+
+    Parameters:
+        timesteps: Number of timesteps to unroll the network for
+        temperature: temperature controls
+                     the variability in the output. Low temperature
+                     will lead to repetetive results(<0.5), high
+                     temperature (>1.2) might
+                     cause random garbage as output
+        save_cells: If True, save the state of the neuron at each
+                    timestep to disk
+        fixed_text: This text will be fed to the network.
+                    If timesteps > fixed_text, the network's
+                    predictions will be sampled and fed into
+                    the network for the next timestep
+        choose_random: Choose the fixed text at random.
+                       Overrides fixed_text if True
     """
     # Load the weights
     Wx_1, Wh_1, b_1 = create_lstm_matrices('weights.hdf5', 'lstm_1')
     Wx_2, Wh_2, b_2 = create_lstm_matrices('weights.hdf5', 'lstm_2')
     Wd, bd = create_dense_matrices('weights.hdf5', 'timedistributed_1')
-    _, char_indices, indices_char = load_data('D:/Data/python.txt')
+    text, char_indices, indices_char = load_data('D:/Data/python.txt')
+
+    if choose_random:
+        start_idx = np.random.choice(len(text) - timesteps)
+        fixed_text = text[start_idx:start_idx+timesteps]
+    if len(fixed_text) == 0:
+        # randomly pick a character from the set
+        fixed_text = np.random.choice(list(char_indices.keys()))
+
+    initial_char = fixed_text[0]
 
     # Set up the initial state
     x = np.zeros((timesteps+1, len(char_indices)))
@@ -152,20 +173,31 @@ def generate_text(initial_char='d', timesteps=400, temperature=1., save_cells=Tr
     c2 = np.zeros_like(h2)
     buffer = initial_char
 
+    # Keep track of internal activations
+    internals1 = []
+    internals2 = []
+
     # Forward passes through the model
     for t in range(timesteps):
-        h1[t+1, :], c1[t+1, :] = lstm_step_forward(x[t, :].reshape(1, -1), h1[t, :], c1[t, :], Wx_1, Wh_1, b_1)
-        h2[t+1, :], c2[t+1, :] = lstm_step_forward(h1[t+1, :].reshape(1, -1), h2[t, :], c2[t, :], Wx_2, Wh_2, b_2)
+        h1[t+1, :], c1[t+1, :], int1 = lstm_step_forward(x[t, :].reshape(1, -1), h1[t, :], c1[t, :], Wx_1, Wh_1, b_1)
+        h2[t+1, :], c2[t+1, :], int2 = lstm_step_forward(h1[t+1, :].reshape(1, -1), h2[t, :], c2[t, :], Wx_2, Wh_2, b_2)
+        internals1.append(int1)
+        internals2.append(int2)
         logprobs = np.dot(h2[t+1], Wd) + bd
         probs = softmax(logprobs.reshape(1, -1))[0]
-        next_index = sample(probs, temperature)
+
+        next_index = sample(probs, temperature) if t+1 >= len(fixed_text) else char_indices[fixed_text[t+1]]
         buffer += indices_char[next_index]
         x[t+1, next_index] = 1
-    
+
     if save_cells:
         all_cells = np.hstack((c1, c2))
         np.savetxt('cell_states.csv', all_cells, delimiter=',', fmt='%.4f')
-    
+        with open('internals1.pkl', 'w') as f:
+            pickle.dump(internals1, f)
+        with open('internals2.pkl', 'w') as f:
+            pickle.dump(internals2, f)
+
     with open('generated.txt', 'w') as file:
         file.write(buffer)
     print(buffer)
@@ -175,4 +207,4 @@ def generate_text(initial_char='d', timesteps=400, temperature=1., save_cells=Tr
 
 
 if __name__ == '__main__':
-    generate_text()
+    generate_text(choose_random=True, timesteps=200, save_cells=False)
