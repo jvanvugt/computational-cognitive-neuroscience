@@ -7,7 +7,7 @@ from __future__ import print_function
 from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM, Dropout
 from keras.layers.wrappers import TimeDistributed
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler, LambdaCallback
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler, LambdaCallback, TensorBoard
 from keras.optimizers import RMSprop
 import numpy as np
 import sys
@@ -19,7 +19,7 @@ resume = False
 
 path = 'D:/Data/python.txt'
 text = open(path).read()
-# Linux includes '\r' when reading a file while Windows doesn't. 
+# Unix includes '\r' when reading a file while Windows doesn't. 
 # We remove it to avoid inconsistencies.
 text = text.replace('\r', '')
 print('corpus length:', len(text))
@@ -31,7 +31,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 100
-step = 11
+step = 31 # Prime number to avoid patterns
 sentences = []
 offset_sentences = []
 for i in range(0, len(text) - maxlen, step):
@@ -50,7 +50,7 @@ for i, (sentence, off_sentence) in enumerate(zip(sentences, offset_sentences)):
 print('Build model...')
 model = Sequential()
 model.add(LSTM(1024, input_shape=(maxlen, len(chars)), return_sequences=True))
-model.add(Dropout(0.2))
+model.add(Dropout(0.5))
 model.add(LSTM(512, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(TimeDistributed(Dense(len(chars))))
@@ -62,7 +62,7 @@ model.summary()
 
 
 def schedule(epoch):
-    lr = 2e-3 if epoch <= 10 else 2e-3 * 0.95**(epoch-10)
+    lr = 2e-3 if epoch <= 9 else 2e-3 * 0.95**(epoch-8)
     print('Setting learning rate to', lr)
     return lr
 
@@ -106,12 +106,13 @@ def generate_text():
 checkpointer = ModelCheckpoint('weights.hdf5', save_best_only=True, save_weights_only=True)
 lr_schedule = LearningRateScheduler(schedule)
 sampler = LambdaCallback(on_epoch_end=lambda _, __: generate_text())
+tensorboard = TensorBoard()
 if resume:
     model.load_weights('weights.hdf5')
 
 
 # train the model, output generated text after each iteration
 history = model.fit(X, y, batch_size=128, nb_epoch=50, validation_split=0.1,
-                    callbacks=[checkpointer, lr_schedule, sampler])
+                    callbacks=[checkpointer, lr_schedule, sampler, tensorboard])
 with open('history.pkl', 'w') as file:
     pickle.dump(history, file)
