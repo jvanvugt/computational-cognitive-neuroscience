@@ -68,4 +68,11 @@ function gotoCell(e) {
     window.drawActivations();
 }
 
-
+window.addEventListener('keydown', (e) => {
+    if (e.keyCode == 39) {
+        nextCell();
+    }
+    else if (e.keyCode == 37) {
+        previousCell();
+    }
+});
