@@ -49,10 +49,8 @@ for i, (sentence, off_sentence) in enumerate(zip(sentences, offset_sentences)):
 
 print('Build model...')
 model = Sequential()
-model.add(LSTM(1024, input_shape=(maxlen, len(chars)), return_sequences=True))
-model.add(Dropout(0.5))
-model.add(LSTM(512, return_sequences=True))
-model.add(Dropout(0.2))
+model.add(LSTM(1024, input_shape=(maxlen, len(chars)), return_sequences=True, dropout_U=0.3, dropout_W=0.3))
+model.add(LSTM(512, return_sequences=True, dropout_U=0.2, dropout_W=0.2))
 model.add(TimeDistributed(Dense(len(chars))))
 model.add(Activation('softmax'))
 
@@ -117,5 +115,5 @@ if resume:
 # train the model, output generated text after each iteration
 history = model.fit(X, y, batch_size=128, nb_epoch=50, validation_split=0.1,
                     callbacks=[checkpointer, lr_schedule, sampler, tensorboard])
-with open('history.pkl', 'w') as file:
+with open('history.pkl', 'wb') as file:
     pickle.dump(history, file)
