@@ -61,10 +61,12 @@ model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 model.summary()
 
 
-def schedule(epoch):
-    lr = 2e-3 if epoch <= 9 else 2e-3 * 0.95**(epoch-8)
-    print('Setting learning rate to', lr)
-    return lr
+def create_schedule(learning_rate=2e-3, epoch_decay=10, decay=0.95):
+    def schedule(epoch):
+        lr = learning_rate if epoch < epoch_decay else learning_rate * decay**(epoch-epoch_decay-2)
+        print('Setting learning rate to', lr)
+        return lr
+    return schedule
 
 
 def sample(preds, temperature=1.0):
@@ -104,10 +106,11 @@ def generate_text():
         print()
 
 checkpointer = ModelCheckpoint('weights.hdf5', save_best_only=True, save_weights_only=True)
-lr_schedule = LearningRateScheduler(schedule)
+lr_schedule = LearningRateScheduler(create_schedule(epoch_decay=5))
 sampler = LambdaCallback(on_epoch_end=lambda _, __: generate_text())
 tensorboard = TensorBoard()
 if resume:
+    print('Loading saved weights...')
     model.load_weights('weights.hdf5')
 
 
