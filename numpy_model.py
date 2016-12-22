@@ -71,18 +71,18 @@ def create_lstm_matrices(filepath, layer):
     """
     prefix = '{0}/{0}_'.format(layer)
     with h5py.File(filepath) as f:
-        Wx = np.hstack((f[prefix + 'W_i'][:],
-                        f[prefix + 'W_f'][:],
-                        f[prefix + 'W_o'][:],
-                        f[prefix + 'W_c'][:]))
-        Wh = np.hstack((f[prefix + 'U_i'][:],
-                        f[prefix + 'U_f'][:],
-                        f[prefix + 'U_o'][:],
-                        f[prefix + 'U_c'][:]))
-        b =  np.hstack((f[prefix + 'b_i'][:],
-                        f[prefix + 'b_f'][:],
-                        f[prefix + 'b_o'][:],
-                        f[prefix + 'b_c'][:]))
+        Wx = np.hstack((f[prefix + 'W_i:0'][:],
+                        f[prefix + 'W_f:0'][:],
+                        f[prefix + 'W_o:0'][:],
+                        f[prefix + 'W_c:0'][:]))
+        Wh = np.hstack((f[prefix + 'U_i:0'][:],
+                        f[prefix + 'U_f:0'][:],
+                        f[prefix + 'U_o:0'][:],
+                        f[prefix + 'U_c:0'][:]))
+        b =  np.hstack((f[prefix + 'b_i:0'][:],
+                        f[prefix + 'b_f:0'][:],
+                        f[prefix + 'b_o:0'][:],
+                        f[prefix + 'b_c:0'][:]))
     return Wx, Wh, b
 
 def create_dense_matrices(filepath, layer):
@@ -92,8 +92,8 @@ def create_dense_matrices(filepath, layer):
     """
     prefix = layer + '/dense_1_'
     with h5py.File(filepath) as f:
-        W = f[prefix + 'W'][:]
-        b = f[prefix + 'b'][:]
+        W = f[prefix + 'W:0'][:]
+        b = f[prefix + 'b:0'][:]
         return W, b
 
 
@@ -107,7 +107,7 @@ def load_data(filepath):
     print('corpus length:', len(text))
 
     # The '\r' disappears on windows machines, so we manually add it back
-    chars = sorted(list(set(text)) + ['\r'])
+    chars = sorted(list(set(text)))
     print('total chars:', len(chars))
     char_indices = dict((c, i) for i, c in enumerate(chars))
     indices_char = dict((i, c) for i, c in enumerate(chars))
@@ -193,9 +193,9 @@ def generate_text(timesteps=400, temperature=1., save_cells=True,
     if save_cells:
         all_cells = np.hstack((c1, c2))
         np.savetxt('cell_states.csv', all_cells, delimiter=',', fmt='%.4f')
-        with open('internals1.pkl', 'w') as f:
+        with open('internals1.pkl', 'wb') as f:
             pickle.dump(internals1, f)
-        with open('internals2.pkl', 'w') as f:
+        with open('internals2.pkl', 'wb') as f:
             pickle.dump(internals2, f)
 
     with open('generated.txt', 'w') as file:
@@ -207,4 +207,4 @@ def generate_text(timesteps=400, temperature=1., save_cells=True,
 
 
 if __name__ == '__main__':
-    generate_text(choose_random=True, timesteps=200, save_cells=False)
+    generate_text(choose_random=True, timesteps=400, save_cells=True)
