@@ -2,7 +2,7 @@
 Final Project for the computational cognitive neuroscience course (SOW-MKI49)
 
 ## Project
-[Jonas & Kording (2016)](http://biorxiv.org/content/early/2016/05/26/055624) have applied popular data analysis methods from neuroscience to a simulated computer chip and showed that these methods don't reveal the hierarchy of information processing on the chip. They concluded that these methods might then also not be a very good fit for neuroscience. In this project, I will apply similar methods to a recurrent neural network character level language model. This model will be trained on python source codei. A neural network might be more representative of the human brain than a computer chip.
+[Jonas & Kording (2016)](http://biorxiv.org/content/early/2016/05/26/055624) have applied popular data analysis methods from neuroscience to a simulated computer chip and showed that these methods don't reveal the hierarchy of information processing on the chip. They concluded that these methods might then also not be a very good fit for neuroscience. In this project, I have applied similar methods to a recurrent neural network character level language model. This model was trained on the War and Peace book by Leo Tolstoy. The idea is that a neural network might be more representative of the human brain than a computer chip. The final paper can be found [here](https://github.com/jvanvugt/computational-cognitive-neuroscience/raw/master/CCN_Paper_JorisvanVugt.pdf).
 
 ## Implementation notes
 In `train_model.py`, I have implemented the model in Keras. It is in adapted version of the text generation from the Keras repository. The original model does sequence-to-one learning. I.e., the model is fed `N` characters and then has to predict the next character. In contrast, this model does sequence-to-sequence learning; it has to predict the next character at each point in time. This increases efficiency when learning, since more data can be utilized.
@@ -19,3 +19,4 @@ Using `plot_neurons.py`, the activations of the cells can be plotted.
 - NumPy
 - matplotlib
 - h5py
+- sklearn
