@@ -65,4 +65,4 @@ def plot_saturation():
     plt.show()
 
 if __name__ == '__main__':
-    plot_correlated()
+    plot_correlated(threshold=0.7)
